@@ -11,6 +11,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "johnny-five": "^2.1.0",
     "mqtt": "^4.3.7",
     "readline": "^1.3.0",
     "serialport": "^10.5.0"
