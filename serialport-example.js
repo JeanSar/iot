@@ -12,8 +12,8 @@ const client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
 
 // Create a port
 const port = new SerialPort({
-  path: 'COM6',
-  //path: '/dev/cu.usbmodem11201',
+  //path: 'COM6',
+  path: '/dev/cu.usbmodem11201',
   baudRate: 115200
 },
   function (err) {
