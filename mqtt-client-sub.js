@@ -33,6 +33,10 @@ SerialPort.list().then(ports => {
       range: [0, 180],
       center: true
     });
+    const greenLed = new five.Led(6);
+    greenLed.off();
+    const redLed = new five.Led(10);
+    redLed.on();
     let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
     const topic = 'test/mytopic'
 
@@ -55,6 +59,8 @@ SerialPort.list().then(ports => {
       console.log("Nouvelle position : " + newpos)
       servo.to(newpos, 1000)
       lcd.cursor(1, 0).print(newpos)
+      redLed.toggle();
+      greenLed.toggle();
     })
   });
 
