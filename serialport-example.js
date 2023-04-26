@@ -9,11 +9,11 @@ import { SerialPort } from 'serialport'
 
 // Create MQTT client
 const client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
-
+const UIDLength = 19;
 // Create a port
 const port = new SerialPort({
   //path: 'COM6',
-  path: '/dev/cu.usbmodem11201',
+  path: '/dev/cu.usbmodem1201',
   baudRate: 115200
 },
   function (err) {
@@ -41,7 +41,9 @@ port.on('readable', function () {
     if (match) {
       MaUIDValue = match[1];
       console.log(MaUIDValue);
-      client.publish('test/mytopic', MaUIDValue);
+      if (MaUIDValue.length === UIDLength) {
+        client.publish('test/mytopic', MaUIDValue);
+      }
     } else {
       console.log('Pas de valeur UID Value trouvée dans la chaîne.');
     }
