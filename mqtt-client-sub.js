@@ -24,7 +24,7 @@ SerialPort.list().then(ports => {
 
   board.on("ready", () => {
     var lcd = new five.LCD({
-      controller: "PCF8574AT",
+      pins: [12, 11, 5, 4, 3, 2],
       rows: 2,
       cols: 16,
     });
