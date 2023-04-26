@@ -21,32 +21,42 @@ SerialPort.list().then(ports => {
   const board = new five.Board({
     io: new Firmata(device.path)
   });
-  let lcd = null;
   board.on("ready", () => {
-    lcd = new five.LCD({
+    const lcd = new five.LCD({
       pins: [12, 11, 5, 4, 3, 2],
       rows: 2,
       cols: 16,
     });
     lcd.print("Ca commence ...");
+    const servo = new five.Servo({
+      pin: 9,
+      range: [0, 180],
+      center: true
+    });
+    let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
+    const topic = 'test/mytopic'
+
+    client.on('connect', function () {
+      client.subscribe(topic, function (err) {
+        if (!err) {
+          console.log('Subscribed to:', topic)
+        }
+      })
+    })
+
+    client.on('message', function (topicR, message) {
+      // message is Buffer
+      var msg = message.toString()
+      console.log(topicR + ': ', msg)
+      lcd.clear()
+      lcd.cursor(0, 0).print(msg)
+      console.log("Ancienne position : " + servo.position)
+      let newpos = (servo.position + 90) % (servo.range[1] + 90)
+      console.log("Nouvelle position : " + newpos)
+      servo.to(newpos, 1000)
+      lcd.cursor(1, 0).print(newpos)
+    })
   });
 
-  let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
-  const topic = 'test/mytopic'
 
-  client.on('connect', function () {
-    client.subscribe(topic, function (err) {
-      if (!err) {
-        console.log('Subscribed to:', topic)
-      }
-    })
-  })
-
-  client.on('message', function (topicR, message) {
-    // message is Buffer
-    var msg = message.toString()
-    console.log(topicR + ': ', msg)
-    lcd.clear()
-    lcd.print(msg)
-  })
 });
