@@ -21,35 +21,32 @@ SerialPort.list().then(ports => {
   const board = new five.Board({
     io: new Firmata(device.path)
   });
-
+  let lcd = null;
   board.on("ready", () => {
-    var lcd = new five.LCD({
+    lcd = new five.LCD({
       pins: [12, 11, 5, 4, 3, 2],
       rows: 2,
       cols: 16,
     });
-    lcd.print("Hello");
+    lcd.print("Ca commence ...");
   });
-});
 
-//var board = new five.Board();
+  let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
+  const topic = 'test/mytopic'
 
-//const serialPort = new SerialPort("/dev/ttyACM0",{});
-
-
-let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
-const topic = 'test/mytopic'
-
-
-client.on('connect', function () {
-  client.subscribe(topic, function (err) {
-    if (!err) {
-      console.log('Subscribed to:', topic)
-    }
+  client.on('connect', function () {
+    client.subscribe(topic, function (err) {
+      if (!err) {
+        console.log('Subscribed to:', topic)
+      }
+    })
   })
-})
 
-client.on('message', function (topicR, message) {
-  // message is Buffer
-  console.log(topicR + ': ', message.toString())
-})  
+  client.on('message', function (topicR, message) {
+    // message is Buffer
+    var msg = message.toString()
+    console.log(topicR + ': ', msg)
+    lcd.clear()
+    lcd.print(msg)
+  })
+});
