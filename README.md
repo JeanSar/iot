@@ -3,7 +3,7 @@
 ## Lancer le projet :
 
 Le publisher
-```node serialport-example.js```
+```node mqtt-client-pub.js```
 
 Le subscriber :
 ```node mqtt-client-sub.js```
