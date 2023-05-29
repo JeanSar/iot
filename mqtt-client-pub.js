@@ -14,7 +14,7 @@ const UIDLength = 19;
 // Create a port
 const port = new SerialPort({
   //path: 'COM6',
-  path: '/dev/cu.usbmodem1201',
+  path: '/dev/ttyACM0',
   baudRate: 115200
 },
   function (err) {
@@ -60,27 +60,3 @@ port.on('data', function (data) {
 
 // Pipe the data into another stream (like a parser or standard out)
 // const lineStream = port.pipe(new Readline())
-
-
-SerialPort.list().then(ports => {
-  const device = ports.reduce((accum, item) => {
-    if (item.manufacturer != null && item.manufacturer.indexOf("Arduino") === 0) {
-      return item;
-    }
-    return accum;
-  }, null);
-  /*
-    The following demonstrates using Firmata
-    as an IO Plugin for Johnny-Five
-   */
-  console.log(device.path)
-  const board = new five.Board({
-    io: new Firmata(device.path)
-  });
-  board.on("ready", () => {
-    const redLed = new five.Led(9);
-    redLed.on();
-  });
-
-
-});
