@@ -11,7 +11,8 @@ import data from './adl_aeroport_lyon.adlvoloperationnelarrivee.json' assert { t
 
 SerialPort.list().then(ports => {
   const device = ports.reduce((accum, item) => {
-    if (item.manufacturer != null && item.manufacturer.indexOf("Arduino") === 0) {
+    console.log(item)
+    if (item.path) {
       return item;
     }
     return accum;
@@ -21,9 +22,10 @@ SerialPort.list().then(ports => {
     as an IO Plugin for Johnny-Five
    */
   console.log(device.path)
-  const board = new five.Board({
+  /*const board = new five.Board({
     io: new Firmata(device.path)
   });
+  console.log(board)
   board.on("ready", () => {
     const lcd = new five.LCD({
       pins: [12, 11, 5, 4, 3, 2],
@@ -83,7 +85,7 @@ SerialPort.list().then(ports => {
       redLed.toggle();
       greenLed.toggle();
     })
-  });
+  });*/
 
 
 });
