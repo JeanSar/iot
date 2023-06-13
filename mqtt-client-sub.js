@@ -1,10 +1,10 @@
 // Source : https://github.com/mqttjs/MQTT.js
 
-// import * as mqtt from "mqtt"  // import everything inside the mqtt module and give it the namespace "mqtt"
-// import { SerialPort } from "serialport";
-// import Firmata from "firmata";
+import * as mqtt from "mqtt"  // import everything inside the mqtt module and give it the namespace "mqtt"
+import { SerialPort } from "serialport";
+import Firmata from "firmata";
 
-// import five from "johnny-five";
+import five from "johnny-five";
 
 import data from './adl_aeroport_lyon.adlvoloperationnelarrivee.json' assert { type: "json" };
 
