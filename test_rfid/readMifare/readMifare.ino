@@ -66,6 +66,13 @@ Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 
 // Or use hardware Serial:
 //Adafruit_PN532 nfc(PN532_RESET, &Serial1);
+const int maxCountDetected = 5;
+const int sensor1 = A0;
+const int sensor2 = A1;
+int sensor1Reading = 0; 
+int sensor2Reading = 0; 
+int sensor1CountDetected = 0;
+int sensor2CountDetected = 0;
 
 void setup(void) {
   Serial.begin(115200);
@@ -86,10 +93,43 @@ void setup(void) {
   Serial.print('.'); Serial.println((versiondata>>8) & 0xFF, DEC);
 
   Serial.println("Waiting for an ISO14443A Card ...");
+
+  // Gestion des sensors analog PIR
+  pinMode(sensor1, INPUT);
+  pinMode(sensor2, INPUT);
+  Serial.println("Initialize System");
 }
 
 
 void loop(void) {
+  // Gestion des sensors analog PIR
+  sensor1Reading = analogRead(sensor1);
+  sensor2Reading = analogRead(sensor2);
+  Serial.print("  Sensor1 value: "); Serial.println(sensor1Reading); 
+  Serial.print("  Sensor2 value: "); Serial.println(sensor2Reading);
+  
+  if(sensor1Reading > 100) {
+    sensor1CountDetected++;
+    if(sensor1CountDetected >= maxCountDetected) {
+      Serial.print( "Sensor1 detecting object : "); Serial.print(sensor1CountDetected); Serial.println(" times");
+    }
+  } 
+  else {
+    sensor1CountDetected = 0;  
+  }
+
+  if(sensor2Reading > 100) {
+    sensor2CountDetected++;
+    if(sensor2CountDetected >= maxCountDetected) {
+      Serial.print( "Sensor2 detecting object : "); Serial.print(sensor2CountDetected); Serial.println(" times");
+    }
+  } 
+  else {
+    sensor2CountDetected = 0;  
+  }
+
+  delay(100);
+
   uint8_t success;
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
   uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
@@ -97,7 +137,7 @@ void loop(void) {
   // Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
   // 'uid' will be populated with the UID, and uidLength will indicate
   // if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
-  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
+  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 200);
 
   if (success) {
     // Display some basic information about the card
