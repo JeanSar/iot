@@ -22,9 +22,10 @@ SerialPort.list().then(ports => {
     as an IO Plugin for Johnny-Five
    */
   console.log(device.path)
-  /*const board = new five.Board({
+  const board = new five.Board({
     io: new Firmata(device.path)
   });
+
   console.log(board)
   board.on("ready", () => {
     const lcd = new five.LCD({
@@ -85,7 +86,7 @@ SerialPort.list().then(ports => {
       redLed.toggle();
       greenLed.toggle();
     })
-  });*/
+  });
 
 
 });
