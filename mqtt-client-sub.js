@@ -8,7 +8,6 @@ import five from "johnny-five";
 
 import data from './adl_aeroport_lyon.adlvoloperationnelarrivee.json' assert { type: "json" };
 
-
 SerialPort.list().then(ports => {
   const device = ports.reduce((accum, item) => {
     console.log(item)
@@ -87,6 +86,4 @@ SerialPort.list().then(ports => {
       greenLed.toggle();
     })
   });
-
-
 });
