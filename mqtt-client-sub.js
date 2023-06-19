@@ -14,7 +14,7 @@ SerialPort.list().then(ports => {
     as an IO Plugin for Johnny-Five
    */
   const board = new five.Board({
-    io: new Firmata('/dev/ttyACM0')
+    io: new Firmata('/dev/cu.usbmodem1101')
   });
 
   board.on("ready", () => {
@@ -80,7 +80,7 @@ SerialPort.list().then(ports => {
       console.log("Nouvelle position : " + newpos)
       servo.to(newpos, 1000)
       lcd.clear()
-      lcd.cursor(1, 0).print(newpos + "°")
+      lcd.cursor(1, 0).print(data.values[randomIdVol].airlines_airline_name + "°")
       redLed.toggle();
       greenLed.toggle();
     })
