@@ -66,13 +66,16 @@ Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 
 // Or use hardware Serial:
 //Adafruit_PN532 nfc(PN532_RESET, &Serial1);
-const int maxCountDetected = 5;
+const int maxCountDetected = 4;
 const int sensor1 = A0;
 const int sensor2 = A1;
 int sensor1Reading = 0; 
 int sensor2Reading = 0; 
 int sensor1CountDetected = 0;
 int sensor2CountDetected = 0;
+unsigned long sensor1FirstTimeDetected;
+unsigned long sensor2FirstTimeDetected;
+
 
 void setup(void) {
   Serial.begin(115200);
@@ -105,13 +108,17 @@ void loop(void) {
   // Gestion des sensors analog PIR
   sensor1Reading = analogRead(sensor1);
   sensor2Reading = analogRead(sensor2);
-  Serial.print("  Sensor1 value: "); Serial.println(sensor1Reading); 
-  Serial.print("  Sensor2 value: "); Serial.println(sensor2Reading);
+  //Serial.print("  Sensor1 value: "); Serial.println(sensor1Reading); 
+  //Serial.print("  Sensor2 value: "); Serial.println(sensor2Reading);
   
   if(sensor1Reading > 100) {
+    if(sensor1CountDetected == 0) {
+      sensor1FirstTimeDetected = millis();
+    }
     sensor1CountDetected++;
     if(sensor1CountDetected >= maxCountDetected) {
-      Serial.print( "Sensor1 detecting object : "); Serial.print(sensor1CountDetected); Serial.println(" times");
+      //Serial.print(sensor1CountDetected);
+      Serial.print( "Sensor1 detecting object: "); Serial.println(sensor1FirstTimeDetected);
     }
   } 
   else {
@@ -119,16 +126,20 @@ void loop(void) {
   }
 
   if(sensor2Reading > 100) {
+    if(sensor2CountDetected == 0) {
+      sensor2FirstTimeDetected = millis();
+    }
     sensor2CountDetected++;
     if(sensor2CountDetected >= maxCountDetected) {
-      Serial.print( "Sensor2 detecting object : "); Serial.print(sensor2CountDetected); Serial.println(" times");
+      //Serial.print(sensor2CountDetected);
+      Serial.print( "Sensor2 detecting object: "); Serial.println(sensor2FirstTimeDetected);
     }
   } 
   else {
     sensor2CountDetected = 0;  
   }
 
-  delay(100);
+  //delay(100);
 
   uint8_t success;
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
@@ -137,7 +148,7 @@ void loop(void) {
   // Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
   // 'uid' will be populated with the UID, and uidLength will indicate
   // if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
-  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 200);
+  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 150);
 
   if (success) {
     // Display some basic information about the card
@@ -150,11 +161,11 @@ void loop(void) {
     if (uidLength == 4)
     {
       // We probably have a Mifare Classic card ...
-      Serial.println("Seems to be a Mifare Classic card (4 byte UID)");
+      //Serial.println("Seems to be a Mifare Classic card (4 byte UID)");
 
       // Now we need to try to authenticate it for read/write access
       // Try with the factory default KeyA: 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
-      Serial.println("Trying to authenticate block 4 with default KEYA value");
+      //Serial.println("Trying to authenticate block 4 with default KEYA value");
       uint8_t keya[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 	  // Start with block 4 (the first block of sector 1) since sector 0
@@ -164,7 +175,7 @@ void loop(void) {
 
       if (success)
       {
-        Serial.println("Sector 1 (Blocks 4..7) has been authenticated");
+        //Serial.println("Sector 1 (Blocks 4..7) has been authenticated");
         uint8_t data[16];
 
         // If you want to write something to block 4 to test with, uncomment
@@ -178,9 +189,9 @@ void loop(void) {
         if (success)
         {
           // Data seems to have been read ... spit it out
-          Serial.println("Reading Block 4:");
+          //Serial.println("Reading Block 4:");
           nfc.PrintHexChar(data, 16);
-          Serial.println("");
+          //Serial.println("");
 
           // Wait a bit before reading the card again
           delay(1000);
@@ -199,24 +210,24 @@ void loop(void) {
     if (uidLength == 7)
     {
       // We probably have a Mifare Ultralight card ...
-      Serial.println("Seems to be a Mifare Ultralight tag (7 byte UID)");
+      //Serial.println("Seems to be a Mifare Ultralight tag (7 byte UID)");
 
       // Try to read the first general-purpose user page (#4)
-      Serial.println("Reading page 4");
+      //Serial.println("Reading page 4");
       uint8_t data[32];
       success = nfc.mifareultralight_ReadPage (4, data);
       if (success)
       {
         // Data seems to have been read ... spit it out
         nfc.PrintHexChar(data, 4);
-        Serial.println("");
+        //Serial.println("");
 
         // Wait a bit before reading the card again
         delay(1000);
       }
       else
       {
-        Serial.println("Ooops ... unable to read the requested page!?");
+        //Serial.println("Ooops ... unable to read the requested page!?");
       }
     }
   }
