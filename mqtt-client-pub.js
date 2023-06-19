@@ -6,11 +6,17 @@ import * as mqtt from "mqtt"  // import everything inside the mqtt module and gi
 
 import { SerialPort } from 'serialport'
 // import { Readline } from 'readline';
-import five from "johnny-five";
 import Firmata from "firmata";
+import { raw } from "express";
 // Create MQTT client
-const client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
+const client = mqtt.connect('mqtt://192.168.78.97:3306'); // create a client
 const UIDLength = 19;
+const topic = 'data/raw';
+const defaultDataFormat = {
+  'object': null,
+  'start': null,
+  'end': null
+}
 // Create a port
 const port = new SerialPort({
   //path: 'COM6',
@@ -30,25 +36,55 @@ client.on('connect', function () {
   //client.end();
 })
 // Use MQTT broker
-var MaUIDValue = ""
+let rawData = defaultDataFormat;
 // Read data that is available but keep the stream in "paused mode"
 port.on('readable', function () {
   //console.log('Data1:', String(port.read()))
-  const uidMatch = String(port.read()).trim().match(/UID Value: ([0-9A-F]+)/);
+  if(!rawData.object) {
+    const uidMatch = String(port.read()).trim().match(/UID Value: ([0-9A-F]+)/);
 
-  if (uidMatch != null) {
-    const regex = /UID Value:\s*([\dA-Fa-fx ]+)/;
-    const match = uidMatch.input.match(regex);
-    if (match) {
-      MaUIDValue = match[1];
-      console.log(MaUIDValue);
-      if (MaUIDValue.length === UIDLength) {
-        client.publish('test/mytopic', MaUIDValue);
+    if (uidMatch) {
+      const regex = /UID Value:\s*([\dA-Fa-fx ]+)/;
+      const match = uidMatch.input.match(regex);
+      if (match) {
+        //console.log(match[1]);
+        if (match[1].length === UIDLength) {
+          rawData.object = match[1].toString();
+          console.log(rawData);
+        }
+      } else {
+        console.log('Pas de valeur UID Value trouvée dans la chaîne.');
       }
-    } else {
-      console.log('Pas de valeur UID Value trouvée dans la chaîne.');
     }
+  } else if (!rawData.start) {
+    const sensor1DetectingMatch = String(port.read()).trim().match(/Sensor1 detecting object: ([0-9]+)/);
+    if(sensor1DetectingMatch) {
+      const regex = /Sensor1 detecting object:\s*([0-9]+)/;
+      const match = sensor1DetectingMatch.input.match(regex);
+      if (match) {
+        rawData.start = Date.now();//match[1];
+        console.log(rawData);
+      }
+    }
+  } else if (!rawData.end) {
+    const sensor2DetectingMatch = String(port.read()).trim().match(/Sensor2 detecting object: ([0-9]+)/);
+    if(sensor2DetectingMatch) {
+      const regex = /Sensor2 detecting object:\s*([0-9]+)/;
+      const match = sensor2DetectingMatch.input.match(regex);
+      if (match) {
+        rawData.end = Date.now();//match[1];
+        console.log(rawData);
+      }
+    }
+  } else {
+    // tout les données sont récupérés : on envoie puis on réinitialise les données
+    client.publish(topic.toString(), JSON.stringify(rawData));
+    rawData.object = null;
+    rawData.start = null;
+    rawData.end = null;
+    console.log(rawData);
   }
+
 })
 
 
