@@ -1,10 +1,10 @@
 import five from "johnny-five";
 import * as mqtt from "mqtt"
 
-const port = "/dev/cu.usbmodem1101"
+const port = "/dev/cu.usbmodem11101"
 const topic = 'data/motor'
 let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
-let motorSpeed = 0;
+let motorSpeed = 20;
 let goForward = true;
 let isRunning = false;
 
@@ -22,7 +22,7 @@ let board = new five.Board({
   port: port
 });
 
-board.on('ready', function() {
+board.on('ready', function () {
   console.log("Ready!");
   const directionSwitch = new five.Button(4);
   const onOffSwitch = new five.Button(5);
@@ -42,10 +42,9 @@ board.on('ready', function() {
 
   // Listen for onOffSwitch 'press' event
   // toggle `isRunning` and start/stop motor
-  onOffSwitch.on('press', function() {
+  onOffSwitch.on('press', function () {
     console.log("On/Off pressed")
     isRunning = !isRunning;
-
     if (isRunning) {
       console.log("On/Off motor start")
       motorStart();
@@ -59,7 +58,7 @@ board.on('ready', function() {
   // toggle `goForward`
   // set isRunning to true (as this will start the motor)
   // call motorForward() or motorReverse()
-  directionSwitch.on('press', function() {
+  directionSwitch.on('press', function () {
     console.log("Switch motor press")
 
     goForward = !goForward;
@@ -84,7 +83,9 @@ board.on('ready', function() {
     if (!isRunning) return;
     motorSpeed = vitesse
     if (goForward) {
-      motorForward(motorSpeed);
+
+      motorStart(0.5);
+
     } else {
       motorReverse(motorSpeed);
     }
@@ -96,7 +97,7 @@ board.on('ready', function() {
   // If the motor isn't running - get out
   // As the motor is running, set `motorSpeed`
   // Send the new speed through to a running motor
-  potPin.on('data', function() {
+  potPin.on('data', function () {
     if (!isRunning) return;
     motorSpeed = this.value / 4;
 
