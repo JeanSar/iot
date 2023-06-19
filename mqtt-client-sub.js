@@ -9,27 +9,23 @@ import five from "johnny-five";
 import data from './adl_aeroport_lyon.adlvoloperationnelarrivee.json' assert { type: "json" };
 
 SerialPort.list().then(ports => {
-  const device = ports.reduce((accum, item) => {
-    if (item.path) {
-      return item;
-    }
-    return accum;
-  }, null);
   /*
     The following demonstrates using Firmata
     as an IO Plugin for Johnny-Five
    */
   const board = new five.Board({
-    io: new Firmata(device.path)
+    io: new Firmata('/dev/cu.usbmodem1101')
   });
 
   board.on("ready", () => {
+    console.log("ici");
     const lcd = new five.LCD({
       pins: [12, 11, 5, 4, 3, 2],
       rows: 2,
       cols: 16,
     });
-    lcd.print("Ca commence ...");
+    lcd.clear()
+    lcd.cursor(0, 0).print("Ca commence ...")
     const servo = new five.Servo({
       pin: 9,
       range: [0, 180],
@@ -50,7 +46,6 @@ SerialPort.list().then(ports => {
         }
       })
     })
-
 
     client.on('message', function (topicR, message) {
       // message is Buffer
@@ -85,7 +80,7 @@ SerialPort.list().then(ports => {
       console.log("Nouvelle position : " + newpos)
       servo.to(newpos, 1000)
       lcd.clear()
-      lcd.cursor(1, 0).print(newpos + "°")
+      lcd.cursor(1, 0).print(data.values[randomIdVol].airlines_airline_name + "°")
       redLed.toggle();
       greenLed.toggle();
     })
