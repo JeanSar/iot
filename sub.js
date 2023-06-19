@@ -14,5 +14,5 @@ client.on('connect', function () {
 
 client.on('message', function (topicR, message) {
   // message is Buffer
-  console.log(topicR + ': ', JSON.parse(message.toString()).vitesse)
+  console.log(topicR + ': ', JSON.parse(message.toString()))
 })

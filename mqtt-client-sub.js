@@ -18,12 +18,14 @@ SerialPort.list().then(ports => {
   });
 
   board.on("ready", () => {
+    console.log("ici");
     const lcd = new five.LCD({
       pins: [12, 11, 5, 4, 3, 2],
       rows: 2,
       cols: 16,
     });
-    lcd.print("Ca commence ...");
+    lcd.clear()
+    lcd.cursor(0, 0).print("Ca commence ...")
     const servo = new five.Servo({
       pin: 9,
       range: [0, 180],
@@ -44,7 +46,6 @@ SerialPort.list().then(ports => {
         }
       })
     })
-
 
     client.on('message', function (topicR, message) {
       // message is Buffer
