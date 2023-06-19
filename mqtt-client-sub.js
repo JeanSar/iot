@@ -9,18 +9,12 @@ import five from "johnny-five";
 import data from './adl_aeroport_lyon.adlvoloperationnelarrivee.json' assert { type: "json" };
 
 SerialPort.list().then(ports => {
-  const device = ports.reduce((accum, item) => {
-    if (item.path) {
-      return item;
-    }
-    return accum;
-  }, null);
   /*
     The following demonstrates using Firmata
     as an IO Plugin for Johnny-Five
    */
   const board = new five.Board({
-    io: new Firmata(device.path)
+    io: new Firmata('/dev/ttyACM0')
   });
 
   board.on("ready", () => {
