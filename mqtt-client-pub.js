@@ -5,7 +5,8 @@
 import * as mqtt from "mqtt"  // import everything inside the mqtt module and give it the namespace "mqtt"
 
 import { SerialPort } from 'serialport'
-// import { Readline } from 'readline';
+import { ReadlineParser } from '@serialport/parser-readline'
+//import { ReadlineParser } from 'readline';
 import Firmata from "firmata";
 import { raw } from "express";
 // Create MQTT client
@@ -19,9 +20,9 @@ const defaultDataFormat = {
 }
 // Create a port
 const port = new SerialPort({
-  //path: 'COM6',
   path: '/dev/ttyACM0',
-  baudRate: 115200
+  baudRate: 115200,
+  parser: new ReadlineParser({ delimiter: '\n' })
 },
   function (err) {
     if (err) {
@@ -29,70 +30,50 @@ const port = new SerialPort({
     }
   }
 )
+
 client.on('connect', function () {
   console.log("je publie ");
 
-
-  //client.end();
 })
-// Use MQTT broker
+
+//empty data to send
 let rawData = defaultDataFormat;
-// Read data that is available but keep the stream in "paused mode"
-port.on('readable', function () {
-  //console.log('Data1:', String(port.read()))
-  if(!rawData.object) {
-    const uidMatch = String(port.read()).trim().match(/UID Value: ([0-9A-F]+)/);
+const uidRegex = /UID Value: ([\dA-Fx ]{19})/;
+const sensor1Regex = /Sensor1 detecting object:\s*([0-9]+)/;
+const sensor2Regex = /Sensor2 detecting object:\s*([0-9]+)/;
 
-    if (uidMatch) {
-      const regex = /UID Value:\s*([\dA-Fa-fx ]+)/;
-      const match = uidMatch.input.match(regex);
-      if (match) {
-        //console.log(match[1]);
-        if (match[1].length === UIDLength) {
-          rawData.object = match[1].toString();
-          console.log(rawData);
-        }
-      } else {
-        console.log('Pas de valeur UID Value trouvée dans la chaîne.');
-      }
-    }
-  } else if (!rawData.start) {
-    const sensor1DetectingMatch = String(port.read()).trim().match(/Sensor1 detecting object: ([0-9]+)/);
-    if(sensor1DetectingMatch) {
-      const regex = /Sensor1 detecting object:\s*([0-9]+)/;
-      const match = sensor1DetectingMatch.input.match(regex);
-      if (match) {
-        rawData.start = Date.now();//match[1];
-        console.log(rawData);
-      }
-    }
-  } else if (!rawData.end) {
-    const sensor2DetectingMatch = String(port.read()).trim().match(/Sensor2 detecting object: ([0-9]+)/);
-    if(sensor2DetectingMatch) {
-      const regex = /Sensor2 detecting object:\s*([0-9]+)/;
-      const match = sensor2DetectingMatch.input.match(regex);
-      if (match) {
-        rawData.end = Date.now();//match[1];
-        console.log(rawData);
-      }
-    }
-  } else {
-    // tout les données sont récupérés : on envoie puis on réinitialise les données
-    client.publish(topic.toString(), JSON.stringify(rawData));
-    rawData.object = null;
-    rawData.start = null;
-    rawData.end = null;
-    console.log(rawData);
-  }
-
-})
-
-
-
-// // Switches the port into "flowing mode"
 port.on('data', function (data) {
-  //console.log('Data2:', String(data))
+  const dataStr = data.toString()
+  //console.log(dataStr);
+  if (!rawData.object) {
+    const uidMatch = dataStr.trim().match(uidRegex);
+    if (uidMatch) {
+      rawData.object = uidMatch[1];
+      console.log(rawData);
+    }
+  }
+  else if (!rawData.start) {
+    const sensor1Match = dataStr.trim().match(sensor1Regex);
+    if (sensor1Match) {
+      rawData.start = sensor1Match[1];
+      console.log(rawData);
+    }
+  }
+  else if (!rawData.end) {
+    const sensor2Match = dataStr.trim().match(sensor2Regex);
+    if (sensor2Match) {
+      if (sensor2Match[1] > rawData.start) {
+        rawData.end = sensor2Match[1];
+        // tout les données sont récupérés : on envoie puis on réinitialise les données
+        console.log(rawData);
+        client.publish(topic.toString(), JSON.stringify(rawData));
+        console.log("Data send")
+        rawData.object = null;
+        rawData.start = null;
+        rawData.end = null;
+      } else {
+        console.log("Le timestamp de Sensor2 est inférieur ou égale à Sensor1")
+      }
+    }
+  }
 })
-
-// Pipe the data into another stream (like a parser or standard out)
-// const lineStream = port.pipe(new Readline())
