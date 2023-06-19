@@ -7,6 +7,7 @@ let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
 let motorSpeed = 0;
 let goForward = true;
 let isRunning = false;
+let a = 10;
 
 // Subscribe to topic data/motor to retrieve Speed motor
 client.on('connect', function () {
@@ -31,39 +32,38 @@ board.on('ready', function() {
       pwm: 3,
       dir: 12
     },
-    invertPWM: true
+    //invertPWM: true
   });
 // POUR TESTER
   // allow command line access
   board.repl.inject({
     motor: motor
   });
-
+/*
   motor.on("start", () => {
     console.log(`start: ${Date.now()}`);
   });
 
-  motor.on("stop", () => {
-    console.log(`automated stop on timer: ${Date.now()}`);
-  });
+  /!*motor.on("stop", () => {
+    //console.log(`automated stop on timer: ${Date.now()}`);
+    console.log("HERE Stop");
+  });*!/
 
-  motor.on("forward", () => {
-    console.log(`forward: ${Date.now()}`);
+  motor.on("forward", async () => {
+    //console.log(`forward: ${Date.now()}`);
 
     // demonstrate switching to reverse after 5 seconds
-    board.wait(5000, () => motor.reverse(50));
-  });
-
-  motor.on("reverse", () => {
-    console.log(`reverse: ${Date.now()}`);
-
-    // demonstrate stopping after 5 seconds
-    board.wait(5000, motor.stop);
+    //while (a > 0) {
+      //console.log("Speed courant : ", motor.currentSpeed)
+      //await new Promise(r => setTimeout(r, 2000));
+      board.wait(0, () => motor.forward(280));
+    //}
   });
 
   // set the motor going forward full speed
-  motor.forward(100);
-
+  console.log("HERE BEFORE FIN")
+  motor.forward(200);
+  console.log("HERE FI")*/
 // FIN TEST
 
 
@@ -73,12 +73,17 @@ board.on('ready', function() {
     // message is Buffer
     let vitesse = JSON.parse(message.toString()).vitesse
     console.log("Speed receive from " + topicName + ': ', vitesse)
-
-    if (!isRunning) return;
+    console.log("isRunning", isRunning)
+    console.log("goForward", goForward)
+    isRunning = true;
     motorSpeed = vitesse
+    console.log("isRunning", isRunning)
+    console.log("goForward", goForward)
     if (goForward) {
+      console.log("Go forward")
       motorForward(motorSpeed);
     } else {
+      console.log("Go REverse")
       motorReverse(motorSpeed);
     }
   })
@@ -102,6 +107,7 @@ board.on('ready', function() {
   function motorForward(speed) {
     motorSpeed = speed || motorSpeed;
     motor.forward(motorSpeed);
+    console.log("Vitesse courante : ", motor.currentSpeed)
   }
 
   /**
