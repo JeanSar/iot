@@ -1,0 +1,205 @@
+
+[
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "3cc11d24.ff01a2",
+        "type": "comment",
+        "z": "f6f2187d.f17ca8",
+        "name": "WARNING: please check you have started this container with a volume that is mounted to /data\\n otherwise any flow changes are lost when you redeploy or upgrade the container\\n (e.g. upgrade to a more recent node-red docker image).\\n  If you are using named volumes you can ignore this warning.\\n Double click or see info side panel to learn how to start Node-RED in Docker to save your work",
+        "info": "\nTo start docker with a bind mount volume (-v option), for example:\n\n```\ndocker run -it -p 1880:1880 -v /home/user/node_red_data:/data --name mynodered nodered/node-red\n```\n\nwhere `/home/user/node_red_data` is a directory on your host machine where you want to store your flows.\n\nIf you do not do this then you can experiment and redploy flows, but if you restart or upgrade the container the flows will be disconnected and lost. \n\nThey will still exist in a hidden data volume, which can be recovered using standard docker techniques, but that is much more complex than just starting with a named volume as described above.",
+        "x": 350,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "6826fcd2198d17cd",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "raw/data",
+        "payload": "{\"object\":\"MY IUD VALUE\",\"start\":\"1686919032\",\"end\":\"1686919042\"}",
+        "payloadType": "json",
+        "x": 110,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f1b9b453aa9368bf",
+        "type": "mqtt out",
+        "z": "f6f2187d.f17ca8",
+        "name": "mqtt out l'aiguillage",
+        "topic": "data/aiguillage",
+        "qos": "2",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "0182363f1e1927b9",
+        "x": 670,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "46b536b372b8f77d",
+        "type": "mqtt in",
+        "z": "f6f2187d.f17ca8",
+        "name": "mqtt in",
+        "topic": "data/raw",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "0182363f1e1927b9",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 90,
+        "y": 440,
+        "wires": [
+            [
+                "9604b6f660e96d22",
+                "6beabb7e6b6996e6"
+            ]
+        ]
+    },
+    {
+        "id": "fa6c87a6e244558b",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 650,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "c8cffdc89ea707b3",
+        "type": "mqtt out",
+        "z": "f6f2187d.f17ca8",
+        "name": "mqtt out motor",
+        "topic": "data/motor",
+        "qos": "2",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "0182363f1e1927b9",
+        "x": 660,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "9604b6f660e96d22",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Rotation de l'aiguillage",
+        "func": "const parsedObject = {\n    randomIdVol: Math.floor(Math.random() * 255 + 1)\n};\n\nmsg.payload = JSON.stringify(parsedObject);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 260,
+        "wires": [
+            [
+                "615f2906d659c722",
+                "f1b9b453aa9368bf"
+            ]
+        ]
+    },
+    {
+        "id": "615f2906d659c722",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "6beabb7e6b6996e6",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Vitesse du tapis",
+        "func": "const distance = 20;\n\nconst vitesse = distance / (msg.payload.end - msg.payload.start)\nlet v = 0\nif(vitesse > 0.01){\n    v = 135\n} else {\n    v = 150\n}\n\nconst parsedObject = {\n    vitesse: v\n};\n\nmsg.payload = parsedObject;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 600,
+        "wires": [
+            [
+                "fa6c87a6e244558b",
+                "c8cffdc89ea707b3"
+            ]
+        ]
+    },
+    {
+        "id": "0182363f1e1927b9",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "http://192.168.78.97:3306/",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

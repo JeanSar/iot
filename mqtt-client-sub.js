@@ -36,6 +36,7 @@ SerialPort.list().then(ports => {
     greenLed.off();
     const redLed = new five.Led(10);
     redLed.on();
+
     let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
     const topic = 'data/aiguillage'
 
@@ -80,7 +81,7 @@ SerialPort.list().then(ports => {
       console.log("Nouvelle position : " + newpos)
       servo.to(newpos, 1000)
       lcd.clear()
-      lcd.cursor(1, 0).print(data.values[randomIdVol].airlines_airline_name + "°")
+      lcd.cursor(1, 0).print(+ " " + data.values[randomIdVol].airports_origin_name + " " + newpos + "°")
       redLed.toggle();
       greenLed.toggle();
     })
