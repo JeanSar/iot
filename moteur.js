@@ -4,7 +4,7 @@ import * as mqtt from "mqtt"
 const port = "/dev/cu.usbmodem1101"
 const topic = 'data/motor'
 let client = mqtt.connect('mqtt://192.168.78.97:3306') // create a client
-let motorSpeed = 200;
+let motorSpeed = 140;
 let goForward = true;
 let isRunning = false;
 
